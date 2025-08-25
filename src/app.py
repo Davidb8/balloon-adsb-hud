@@ -786,7 +786,8 @@ def create_altitude_chart(aircraft_data, altitude_units='m', altitude_source='al
         name=f'{source_label} Altitude ({unit_abbr})',
         line=dict(color='#58a6ff', width=2),
         marker=dict(size=4, color='#58a6ff'),
-        hovertemplate=f'<b>%{{x}}</b><br>{source_label} Altitude: %{{y:,.0f}} {unit_abbr}<extra></extra>'
+        hoverinfo='skip',
+        # hovertemplate=f'<b>%{{x}}</b><br>{source_label} Altitude: %{{y:,.0f}} {unit_abbr}<extra></extra>'
     ))
     
     # Current position marker
@@ -798,7 +799,8 @@ def create_altitude_chart(aircraft_data, altitude_units='m', altitude_source='al
             mode='markers',
             name='Current',
             marker=dict(size=12, color='#f85149', symbol='circle'),
-            hovertemplate=f'<b>Current</b><br>%{{x}}<br>Altitude: %{{y:,.0f}} {unit_abbr}<extra></extra>'
+            hoverinfo='skip',
+        # hovertemplate=f'<b>Current</b><br>%{{x}}<br>Altitude: %{{y:,.0f}} {unit_abbr}<extra></extra>'
         ))
     
     # Set y-axis configuration
@@ -862,7 +864,8 @@ def create_velocity_chart(icao, altitude_units='m', y_min=None, y_max=None):
                 marker=dict(size=4, color=colors),
                 fill='tozeroy',
                 fillcolor='rgba(88, 166, 255, 0.1)',
-                hovertemplate=f'<b>%{{x}}</b><br>Vertical Rate: %{{y:.2f}} {unit_label}<extra></extra>'
+                hoverinfo='skip',
+        # hovertemplate=f'<b>%{{x}}</b><br>Vertical Rate: %{{y:.2f}} {unit_label}<extra></extra>'
             ))
             
             # Zero line
@@ -878,7 +881,8 @@ def create_velocity_chart(icao, altitude_units='m', y_min=None, y_max=None):
                     name='Ground Speed',
                     line=dict(color='#58a6ff', width=2),
                     marker=dict(size=4, color='#58a6ff'),
-                    hovertemplate='<b>%{x}</b><br>Ground Speed: %{y:.1f} m/s<extra></extra>'
+                    hoverinfo='skip',
+        # hovertemplate='<b>%{x}</b><br>Ground Speed: %{y:.1f} m/s<extra></extra>'
                 ))
                 y_title = 'Ground Speed (m/s)'
             else:
@@ -1086,7 +1090,8 @@ def create_wind_profile(icao, altitude_source='altitude', y_min=None, y_max=None
                 ),
                 line=dict(width=1, color='#c9d1d9')
             ),
-            hovertemplate=f'<b>Wind Profile</b><br>Direction: %{{x:.0f}}°<br>{source_label} Altitude: %{{y:.0f}}m<br>Speed: %{{marker.color:.1f}} m/s<extra></extra>'
+            hoverinfo='skip',
+        # hovertemplate=f'<b>Wind Profile</b><br>Direction: %{{x:.0f}}°<br>{source_label} Altitude: %{{y:.0f}}m<br>Speed: %{{marker.color:.1f}} m/s<extra></extra>'
         ))
         
         # Add cardinal direction reference lines
@@ -1311,7 +1316,8 @@ def create_multi_balloon_altitude_chart(selected_balloons_list, altitude_units='
             name=f'{icao.upper()}',
             line=dict(color=color, width=2),
             marker=dict(size=4, color=color),
-            hovertemplate=f'<b style="color:{color}">{icao.upper()}</b><br>Time: %{{x}}<br>Altitude: %{{y:.0f}} {altitude_units}<extra></extra>'
+            hoverinfo='skip',
+        # hovertemplate=f'<b style="color:{color}">{icao.upper()}</b><br>Time: %{{x}}<br>Altitude: %{{y:.0f}} {altitude_units}<extra></extra>'
         ))
     
     unit_label = "feet" if altitude_units == 'ft' else "meters"
@@ -1393,7 +1399,8 @@ def create_multi_balloon_velocity_chart(selected_balloons_list, altitude_units='
                 name=f'{icao.upper()}',
                 line=dict(color=color, width=2),
                 marker=dict(size=4, color=color),
-                hovertemplate=f'<b style="color:{color}">{icao.upper()}</b><br>Time: %{{x}}<br>Vertical Rate: %{{y:.2f}} {unit_label}<extra></extra>'
+                hoverinfo='skip',
+        # hovertemplate=f'<b style="color:{color}">{icao.upper()}</b><br>Time: %{{x}}<br>Vertical Rate: %{{y:.2f}} {unit_label}<extra></extra>'
             ))
         elif 'velocity' in df.columns:
             # Fallback to ground speed if no vertical rate
@@ -1404,7 +1411,8 @@ def create_multi_balloon_velocity_chart(selected_balloons_list, altitude_units='
                 name=f'{icao.upper()} (Ground Speed)',
                 line=dict(color=color, width=2),
                 marker=dict(size=4, color=color),
-                hovertemplate=f'<b style="color:{color}">{icao.upper()}</b><br>Time: %{{x}}<br>Ground Speed: %{{y:.1f}} m/s<extra></extra>'
+                hoverinfo='skip',
+        # hovertemplate=f'<b style="color:{color}">{icao.upper()}</b><br>Time: %{{x}}<br>Ground Speed: %{{y:.1f}} m/s<extra></extra>'
             ))
     
     # Zero line for vertical velocity
@@ -1468,7 +1476,8 @@ def create_multi_balloon_trajectory_map(selected_balloons_list):
             name=f'{icao.upper()}',
             line=dict(width=3, color=color),
             marker=dict(size=8, color=color),
-            hovertemplate=f'<b style="color:{color}">{icao.upper()}</b><br>Lat: %{{lat:.4f}}<br>Lon: %{{lon:.4f}}<extra></extra>'
+            hoverinfo='skip',
+        # hovertemplate=f'<b style="color:{color}">{icao.upper()}</b><br>Lat: %{{lat:.4f}}<br>Lon: %{{lon:.4f}}<extra></extra>'
         ))
         
         # Mark start and end points
@@ -1481,7 +1490,8 @@ def create_multi_balloon_trajectory_map(selected_balloons_list):
                 name=f'{icao.upper()} Start',
                 marker=dict(size=12, color='white', symbol='circle'),
                 showlegend=False,
-                hovertemplate=f'<b style="color:{color}">{icao.upper()} Start</b><br>Lat: %{{lat:.4f}}<br>Lon: %{{lon:.4f}}<extra></extra>'
+                hoverinfo='skip',
+        # hovertemplate=f'<b style="color:{color}">{icao.upper()} Start</b><br>Lat: %{{lat:.4f}}<br>Lon: %{{lon:.4f}}<extra></extra>'
             ))
             
             # Current/end point
@@ -1492,7 +1502,8 @@ def create_multi_balloon_trajectory_map(selected_balloons_list):
                 name=f'{icao.upper()} Current',
                 marker=dict(size=15, color=color, symbol='circle'),
                 showlegend=False,
-                hovertemplate=f'<b style="color:{color}">{icao.upper()} Current</b><br>Lat: %{{lat:.4f}}<br>Lon: %{{lon:.4f}}<extra></extra>'
+                hoverinfo='skip',
+        # hovertemplate=f'<b style="color:{color}">{icao.upper()} Current</b><br>Lat: %{{lat:.4f}}<br>Lon: %{{lon:.4f}}<extra></extra>'
             ))
     
     # Calculate center point for all balloons
@@ -1585,7 +1596,8 @@ def create_multi_balloon_wind_profile(selected_balloons_list, altitude_source='a
                 opacity=0.7,
                 symbol='circle'
             ),
-            hovertemplate=f'<b style="color:{color}">{icao.upper()}</b><br>Wind Dir: %{{x:.0f}}°<br>Altitude: %{{y:.0f}} {altitude_units}<extra></extra>'
+            hoverinfo='skip',
+        # hovertemplate=f'<b style="color:{color}">{icao.upper()}</b><br>Wind Dir: %{{x:.0f}}°<br>Altitude: %{{y:.0f}} {altitude_units}<extra></extra>'
         ))
     
     # Add cardinal direction reference lines
