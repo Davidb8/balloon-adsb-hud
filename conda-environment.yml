@@ -1,0 +1,20 @@
+name: balloon-hud
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - python=3.11
+  - pip
+  - numpy
+  - pandas
+  - sqlite
+  - pip:
+    - dash==2.17.1
+    - plotly==5.17.0
+    - dash-bootstrap-components==1.5.0
+    - flask-socketio==5.3.6
+    - requests==2.31.0
+    - python-dotenv==1.0.0
+    - eventlet==0.33.3
+    - geopy==2.4.0
+    - python-dateutil==2.8.2
