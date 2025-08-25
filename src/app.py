@@ -28,6 +28,16 @@ app.title = "Balloon ADSB HUD"
 # Global variables for tracking
 tracked_balloons = {}  # {icao: {collector: DataCollector, last_update: datetime}}
 selected_balloons = set()  # Set of ICAOs to display on charts
+
+# Consistent color mapping for balloons
+BALLOON_COLORS = ['#58a6ff', '#3fb950', '#f85149', '#d29922', '#da70d6', '#ff6347', '#32cd32', '#ffa500']
+
+def get_balloon_color(icao):
+    """Get consistent color for a balloon based on ICAO code."""
+    # Use hash of ICAO to get consistent color index
+    hash_value = hash(icao.lower()) % len(BALLOON_COLORS)
+    return BALLOON_COLORS[hash_value]
+
 last_update = datetime.now()
 
 # App layout
@@ -1262,8 +1272,6 @@ def create_multi_balloon_altitude_chart(selected_balloons_list, altitude_units='
     if not selected_balloons_list:
         return create_empty_figure()
     
-    colors = ['#58a6ff', '#3fb950', '#f85149', '#d29922', '#da70d6', '#ff6347', '#32cd32', '#ffa500']
-    
     for i, icao in enumerate(selected_balloons_list):
         aircraft_data = db.get_aircraft_data_since_session(icao)
         
@@ -1294,7 +1302,7 @@ def create_multi_balloon_altitude_chart(selected_balloons_list, altitude_units='
         if altitude_units == 'ft':
             altitudes = altitudes * 3.28084  # Convert from meters to feet
             
-        color = colors[i % len(colors)]
+        color = get_balloon_color(icao)
         
         fig.add_trace(go.Scatter(
             x=df_alt['datetime'],
@@ -1303,7 +1311,7 @@ def create_multi_balloon_altitude_chart(selected_balloons_list, altitude_units='
             name=f'{icao.upper()}',
             line=dict(color=color, width=2),
             marker=dict(size=4, color=color),
-            hovertemplate=f'<b>{icao.upper()}</b><br>%{{x}}<br>Altitude: %{{y:.0f}} {altitude_units}<extra></extra>'
+            hovertemplate=f'<b style="color:{color}">{icao.upper()}</b><br>Time: %{{x}}<br>Altitude: %{{y:.0f}} {altitude_units}<extra></extra>'
         ))
     
     unit_label = "feet" if altitude_units == 'ft' else "meters"
@@ -1343,7 +1351,6 @@ def create_multi_balloon_velocity_chart(selected_balloons_list, altitude_units='
     if not selected_balloons_list:
         return create_empty_figure()
     
-    colors = ['#58a6ff', '#3fb950', '#f85149', '#d29922', '#da70d6', '#ff6347', '#32cd32', '#ffa500']
     
     # Determine unit label for y-axis
     if altitude_units == 'ft':
@@ -1365,7 +1372,7 @@ def create_multi_balloon_velocity_chart(selected_balloons_list, altitude_units='
         if len(df) == 0:
             continue
         
-        color = colors[i % len(colors)]
+        color = get_balloon_color(icao)
         
         # Vertical velocity from raw ADSB data (convert based on unit preference)
         if 'vertical_rate' in df.columns and df['vertical_rate'].notna().any():
@@ -1386,7 +1393,7 @@ def create_multi_balloon_velocity_chart(selected_balloons_list, altitude_units='
                 name=f'{icao.upper()}',
                 line=dict(color=color, width=2),
                 marker=dict(size=4, color=color),
-                hovertemplate=f'<b>{icao.upper()}</b><br>%{{x}}<br>Vertical Rate: %{{y:.2f}} {unit_label}<extra></extra>'
+                hovertemplate=f'<b style="color:{color}">{icao.upper()}</b><br>Time: %{{x}}<br>Vertical Rate: %{{y:.2f}} {unit_label}<extra></extra>'
             ))
         elif 'velocity' in df.columns:
             # Fallback to ground speed if no vertical rate
@@ -1397,7 +1404,7 @@ def create_multi_balloon_velocity_chart(selected_balloons_list, altitude_units='
                 name=f'{icao.upper()} (Ground Speed)',
                 line=dict(color=color, width=2),
                 marker=dict(size=4, color=color),
-                hovertemplate=f'<b>{icao.upper()}</b><br>%{{x}}<br>Ground Speed: %{{y:.1f}} m/s<extra></extra>'
+                hovertemplate=f'<b style="color:{color}">{icao.upper()}</b><br>Time: %{{x}}<br>Ground Speed: %{{y:.1f}} m/s<extra></extra>'
             ))
     
     # Zero line for vertical velocity
@@ -1437,7 +1444,6 @@ def create_multi_balloon_trajectory_map(selected_balloons_list):
     if not selected_balloons_list:
         return create_empty_figure()
     
-    colors = ['#58a6ff', '#3fb950', '#f85149', '#d29922', '#da70d6', '#ff6347', '#32cd32', '#ffa500']
     
     for i, icao in enumerate(selected_balloons_list):
         aircraft_data = db.get_aircraft_data_since_session(icao)
@@ -1452,7 +1458,7 @@ def create_multi_balloon_trajectory_map(selected_balloons_list):
         if len(df) == 0:
             continue
         
-        color = colors[i % len(colors)]
+        color = get_balloon_color(icao)
         
         # Plot trajectory
         fig.add_trace(go.Scattermapbox(
@@ -1462,7 +1468,7 @@ def create_multi_balloon_trajectory_map(selected_balloons_list):
             name=f'{icao.upper()}',
             line=dict(width=3, color=color),
             marker=dict(size=8, color=color),
-            hovertemplate=f'<b>{icao.upper()}</b><br>Lat: %{{lat:.4f}}<br>Lon: %{{lon:.4f}}<extra></extra>'
+            hovertemplate=f'<b style="color:{color}">{icao.upper()}</b><br>Lat: %{{lat:.4f}}<br>Lon: %{{lon:.4f}}<extra></extra>'
         ))
         
         # Mark start and end points
@@ -1475,7 +1481,7 @@ def create_multi_balloon_trajectory_map(selected_balloons_list):
                 name=f'{icao.upper()} Start',
                 marker=dict(size=12, color='white', symbol='circle'),
                 showlegend=False,
-                hovertemplate=f'<b>{icao.upper()} Start</b><br>Lat: %{{lat:.4f}}<br>Lon: %{{lon:.4f}}<extra></extra>'
+                hovertemplate=f'<b style="color:{color}">{icao.upper()} Start</b><br>Lat: %{{lat:.4f}}<br>Lon: %{{lon:.4f}}<extra></extra>'
             ))
             
             # Current/end point
@@ -1486,7 +1492,7 @@ def create_multi_balloon_trajectory_map(selected_balloons_list):
                 name=f'{icao.upper()} Current',
                 marker=dict(size=15, color=color, symbol='circle'),
                 showlegend=False,
-                hovertemplate=f'<b>{icao.upper()} Current</b><br>Lat: %{{lat:.4f}}<br>Lon: %{{lon:.4f}}<extra></extra>'
+                hovertemplate=f'<b style="color:{color}">{icao.upper()} Current</b><br>Lat: %{{lat:.4f}}<br>Lon: %{{lon:.4f}}<extra></extra>'
             ))
     
     # Calculate center point for all balloons
@@ -1533,7 +1539,6 @@ def create_multi_balloon_wind_profile(selected_balloons_list, altitude_source='a
     if not selected_balloons_list:
         return create_empty_figure()
     
-    colors = ['#58a6ff', '#3fb950', '#f85149', '#d29922', '#da70d6', '#ff6347', '#32cd32', '#ffa500']
     
     for i, icao in enumerate(selected_balloons_list):
         # Apply time filter if specified (convert minutes to seconds)
@@ -1567,7 +1572,7 @@ def create_multi_balloon_wind_profile(selected_balloons_list, altitude_source='a
         wind_dirs = df['wind_direction'].values
         altitudes_display = df['altitude_display'].values
         
-        color = colors[i % len(colors)]
+        color = get_balloon_color(icao)
         
         fig.add_trace(go.Scatter(
             x=wind_dirs,
@@ -1580,7 +1585,7 @@ def create_multi_balloon_wind_profile(selected_balloons_list, altitude_source='a
                 opacity=0.7,
                 symbol='circle'
             ),
-            hovertemplate=f'<b>{icao.upper()}</b><br>Wind Dir: %{{x:.0f}}°<br>Altitude: %{{y:.0f}} {altitude_units}<extra></extra>'
+            hovertemplate=f'<b style="color:{color}">{icao.upper()}</b><br>Wind Dir: %{{x:.0f}}°<br>Altitude: %{{y:.0f}} {altitude_units}<extra></extra>'
         ))
     
     # Add cardinal direction reference lines
