@@ -1798,7 +1798,7 @@ def handle_chart_maximize(alt_btn, vel_btn, traj_btn, wind_btn, close_click,
 
 if __name__ == '__main__':
     print("Starting Balloon ADSB HUD...")
-    print(f"Access the application at: http://localhost:{Config.PORT}")
+    print(f"Server running on port {Config.PORT}")
     
     app.run(
         host='0.0.0.0',

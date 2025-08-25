@@ -24,8 +24,8 @@ COPY . .
 # Create data directory for SQLite database
 RUN mkdir -p /app/data
 
-# Expose port
-EXPOSE 8050
+# Expose port (Render will provide PORT env var)
+EXPOSE $PORT
 
 # Set environment variables
 ENV CONDA_DEFAULT_ENV=balloon-hud
