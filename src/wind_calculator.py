@@ -281,8 +281,9 @@ class WindCalculator:
             # Calculate ground speed
             ground_speed = distance / (time_diff / 3600)  # km/h
             
-            # Convert to wind direction (opposite of ground track)
-            wind_direction = (bearing + 180) % 360
+            # Wind direction = direction balloon is drifting (same as ground track)
+            # Balloons drift WITH the wind, so balloon movement direction = wind direction
+            wind_direction = bearing
             
             wind_vectors.append({
                 'altitude': curr_point[altitude_col],

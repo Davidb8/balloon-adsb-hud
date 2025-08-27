@@ -17,7 +17,7 @@ class Config:
     }
     
     # Application Configuration
-    UPDATE_INTERVAL = int(os.getenv('UPDATE_INTERVAL', 5))
+    UPDATE_INTERVAL = int(os.getenv('UPDATE_INTERVAL', 1))
     DATABASE_PATH = os.getenv('DATABASE_PATH', './data/balloons.db')
     PORT = int(os.getenv('PORT', 8050))
     DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'

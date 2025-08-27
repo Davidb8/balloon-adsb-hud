@@ -234,6 +234,30 @@ app.layout = html.Div([
                             maxHeight=200,
                             optionHeight=35
                         )
+                    ], className='filter-row', style={'margin-top': '4px'}),
+                    html.Div([
+                        html.Label("Altitude Binning:", className="filter-label"),
+                        html.Div([
+                            dcc.Checklist(
+                                id='wind-binning-enable',
+                                options=[{'label': 'Enable', 'value': 'enabled'}],
+                                value=[],
+                                inline=True,
+                                style={'color': '#e6edf3', 'margin-right': '10px'}
+                            ),
+                            dcc.Input(
+                                id='wind-altitude-bin',
+                                type='number',
+                                placeholder='Bin width (m)',
+                                min=10,
+                                max=2000,
+                                step=10,
+                                value=500,
+                                className='filter-input',
+                                style={'width': '100px', 'display': 'inline-block'}
+                            ),
+                            html.Label("m", className="filter-unit", style={'margin-left': '4px'})
+                        ], style={'display': 'flex', 'align-items': 'center'})
                     ], className='filter-row', style={'margin-top': '4px'})
                 ], className="wind-filters")
             ], className="control-group"),
@@ -664,12 +688,14 @@ def update_wind_reference_options(tracking_state):
      Input('wind-y-max', 'value'),
      Input('wind-time-filter', 'value'),
      Input('wind-distance-filter', 'value'),
-     Input('wind-reference-balloon', 'value')],
+     Input('wind-reference-balloon', 'value'),
+     Input('wind-binning-enable', 'value'),
+     Input('wind-altitude-bin', 'value')],
     [State('tracking-state', 'data')]
 )
 def update_charts(n_intervals, altitude_units, altitude_source, 
                  alt_y_min, alt_y_max, vel_y_min, vel_y_max, wind_y_min, wind_y_max,
-                 wind_time_filter, wind_distance_filter, wind_reference_balloon, tracking_state):
+                 wind_time_filter, wind_distance_filter, wind_reference_balloon, wind_binning_enable, wind_altitude_bin, tracking_state):
     # Handle multi-balloon data
     selected_balloons_list = tracking_state.get('selected_balloons', [])
     
@@ -684,7 +710,7 @@ def update_charts(n_intervals, altitude_units, altitude_source,
         alt_fig = create_multi_balloon_altitude_chart(selected_balloons_list, altitude_units, altitude_source, alt_y_min, alt_y_max)
         vel_fig = create_multi_balloon_velocity_chart(selected_balloons_list, altitude_units, vel_y_min, vel_y_max)
         traj_fig = create_multi_balloon_trajectory_map(selected_balloons_list)
-        wind_fig = create_multi_balloon_wind_profile(selected_balloons_list, altitude_source, altitude_units, wind_y_min, wind_y_max, wind_time_filter, wind_distance_filter, wind_reference_balloon)
+        wind_fig = create_multi_balloon_wind_profile(selected_balloons_list, altitude_source, altitude_units, wind_y_min, wind_y_max, wind_time_filter, wind_distance_filter, wind_reference_balloon, wind_binning_enable, wind_altitude_bin)
         
         return alt_fig, vel_fig, traj_fig, wind_fig
         
@@ -1543,7 +1569,7 @@ def create_multi_balloon_trajectory_map(selected_balloons_list):
     
     return fig
 
-def create_multi_balloon_wind_profile(selected_balloons_list, altitude_source='altitude', altitude_units='m', y_min=None, y_max=None, time_filter_minutes=None, distance_filter_km=None, reference_balloon=None):
+def create_multi_balloon_wind_profile(selected_balloons_list, altitude_source='altitude', altitude_units='m', y_min=None, y_max=None, time_filter_minutes=None, distance_filter_km=None, reference_balloon=None, binning_enabled=None, altitude_bin_width=None):
     """Create wind profile chart with data from multiple selected balloons with proper unit conversion"""
     fig = go.Figure()
     
@@ -1570,6 +1596,46 @@ def create_multi_balloon_wind_profile(selected_balloons_list, altitude_source='a
         df = pd.DataFrame(wind_data)
         if len(df) == 0:
             continue
+        
+        # Apply altitude binning and averaging if enabled and bin width is specified
+        if binning_enabled and 'enabled' in binning_enabled and altitude_bin_width and altitude_bin_width > 0:
+            # Create altitude bins
+            df['altitude_bin_custom'] = (df['altitude_bin'] // altitude_bin_width) * altitude_bin_width
+            
+            # Group by custom altitude bins and calculate vector averages per balloon
+            binned_data = []
+            for bin_altitude in df['altitude_bin_custom'].unique():
+                bin_data = df[df['altitude_bin_custom'] == bin_altitude]
+                
+                if len(bin_data) > 0:
+                    # Calculate vector average for wind direction (proper way to average angles)
+                    wind_speeds = bin_data['wind_speed'].values
+                    wind_directions = bin_data['wind_direction'].values
+                    
+                    # Convert to vector components
+                    u_components = wind_speeds * np.sin(np.radians(wind_directions))
+                    v_components = wind_speeds * np.cos(np.radians(wind_directions))
+                    
+                    # Average the components
+                    avg_u = np.mean(u_components)
+                    avg_v = np.mean(v_components)
+                    
+                    # Convert back to speed and direction
+                    avg_wind_speed = np.sqrt(avg_u**2 + avg_v**2)
+                    avg_wind_direction = np.degrees(np.arctan2(avg_u, avg_v))
+                    avg_wind_direction = (avg_wind_direction + 360) % 360
+                    
+                    binned_data.append({
+                        'altitude_bin': bin_altitude,
+                        'wind_speed': avg_wind_speed,
+                        'wind_direction': avg_wind_direction,
+                        'sample_count': len(bin_data)
+                    })
+            
+            # Replace original data with binned data
+            df = pd.DataFrame(binned_data)
+            if len(df) == 0:
+                continue
         
         # Convert altitude units for display 
         altitudes = df['altitude_bin']
